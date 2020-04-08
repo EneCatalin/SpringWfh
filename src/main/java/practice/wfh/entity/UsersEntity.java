@@ -1,4 +1,4 @@
-package practice.wfh.entities;
+package practice.wfh.entity;
 
 import org.hibernate.annotations.GenericGenerator;
 
