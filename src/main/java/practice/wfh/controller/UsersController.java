@@ -5,9 +5,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import practice.wfh.entity.UsersEntity;
+import practice.wfh.localExceptions.UserNotFoundException;
 import practice.wfh.model.UserModel;
 import practice.wfh.service.UsersService;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,7 +33,7 @@ public class UsersController {
     }
 
     @GetMapping(path = "/{userId}")
-    public ResponseEntity<UserModel> getUser(@PathVariable String userId) throws EntityActionVetoException {
+    public ResponseEntity<UserModel> getUser(@PathVariable String userId) throws UserNotFoundException {
         UserModel userModel = usersService.getUserById(userId);
 
         return new ResponseEntity<UserModel>(userModel, HttpStatus.OK);

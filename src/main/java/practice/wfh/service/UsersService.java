@@ -3,6 +3,7 @@ package practice.wfh.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import practice.wfh.entity.UsersEntity;
+import practice.wfh.localExceptions.UserNotFoundException;
 import practice.wfh.model.UserModel;
 import practice.wfh.repository.UsersRepository;
 
@@ -34,7 +35,7 @@ public class UsersService {
         return users;
     }
 
-    public UserModel getUserById(String userId) throws EntityNotFoundException
+    public UserModel getUserById(String userId) throws UserNotFoundException
     {
         Optional<UsersEntity> optionalUsersEntity = usersRepository.findById(userId);
 
@@ -43,7 +44,7 @@ public class UsersService {
 
             return new UserModel(userEntity.getId(),userEntity.getFirstName(),userEntity.getLastName());
         } else {
-            throw new EntityNotFoundException("No employee record exist for given id");
+            throw new UserNotFoundException();
         }
     }
 
