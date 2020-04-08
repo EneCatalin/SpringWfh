@@ -3,6 +3,7 @@ package practice.wfh.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 import practice.wfh.entities.UsersEntity;
 import practice.wfh.repositories.UsersRepository;
@@ -15,8 +16,17 @@ import java.util.Optional;
 @RequestMapping("/users")
 public class UsersController {
 
+    private final UsersRepository usersRepository;
+
+    /**As  of Spring 4.3, classes with a single constructor can omit the @Autowired annotation. A nice little bit of
+     * convenience and boilerplate removal!
+     * ALSO SEE http://olivergierke.de/2013/11/why-field-injection-is-evil/
+     */
     @Autowired
-    private UsersRepository usersRepository;
+    public UsersController(UsersRepository usersRepository) {
+        Assert.notNull(usersRepository, "MyCollaborator must not be null!");
+        this.usersRepository = usersRepository;
+    }
 
     @PutMapping("/{id}")
     public ResponseEntity<UsersEntity> updateUser(@PathVariable("id") String id, @RequestBody UsersEntity tutorial) {
@@ -39,6 +49,7 @@ public class UsersController {
         List<UsersEntity> users = new ArrayList<>();
 
         usersRepository.findAll().forEach((users::add));
+
 
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
