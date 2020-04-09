@@ -83,7 +83,22 @@ public class UsersService {
             return HttpStatus.EXPECTATION_FAILED;
         }
 
+    }
 
+    //TODO Look over this method
+    public UserModel updateUserModel(UserModel receivedModel, String userId) throws UserNotFoundException {
+        Optional<UsersEntity> userData = usersRepository.findById(userId);
+
+        if (userData.isPresent()) {
+            UsersEntity userEntity = userData.get();
+            userEntity.setFirstName(receivedModel.getLastName());
+            userEntity.setLastName(receivedModel.getFirstName());
+            usersRepository.save(userEntity);
+
+            return new UserModel(userEntity.getId(),userEntity.getFirstName(),userEntity.getLastName());
+        } else {
+            throw new UserNotFoundException();
+        }
     }
 
 }

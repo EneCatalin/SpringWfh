@@ -38,27 +38,16 @@ public class UsersController {
     @ExceptionHandler({UserNotFoundException.class})
     @PostMapping("/createUser")
     public ResponseEntity<UserModel> createUser(@RequestBody @Valid UserModel user) throws Exception {
-        System.out.println("111222");
-        UserModel userModel = usersService.createUser(user);
 
-        return new ResponseEntity<>(userModel, HttpStatus.OK);
+        return new ResponseEntity<>(usersService.createUser(user), HttpStatus.OK);
     }
 
 
-//    @PutMapping("/{id}")
-//    public ResponseEntity<UsersEntity> updateUser(@PathVariable("id") String id, @RequestBody UsersEntity tutorial) {
-//        Optional<UsersEntity> userData = usersRepository.findById(id);
-//
-//        if (userData.isPresent()) {
-//            UsersEntity _user = userData.get();
-//            _user.setFirstName(tutorial.getLastName());
-//            _user.setLastName(tutorial.getFirstName());
-//
-//            return new ResponseEntity<>(usersRepository.save(_user), HttpStatus.OK);
-//        } else {
-//            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-//        }
-//    }
+    @PutMapping("/{id}")
+    public ResponseEntity<UserModel> updateUser(@PathVariable("id") String userId,
+                                                @RequestBody @Valid UserModel userModel) throws UserNotFoundException {
+        return new ResponseEntity<UserModel>(usersService.updateUserModel(userModel,userId),HttpStatus.OK);
+    }
 
 
     @DeleteMapping("/{id}")
