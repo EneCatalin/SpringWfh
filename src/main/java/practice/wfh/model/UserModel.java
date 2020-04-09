@@ -1,8 +1,12 @@
 package practice.wfh.model;
 
+import javax.validation.constraints.NotBlank;
+
 public class UserModel {
     private String id;
+    @NotBlank(message = "Please enter a firstName for the user!")
     private String firstName;
+    @NotBlank(message = "Please enter a lastName for the user!")
     private String lastName;
 
     public UserModel(String id, String firstName, String lastName) {

@@ -1,13 +1,13 @@
 package practice.wfh.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import practice.wfh.entity.UsersEntity;
 import practice.wfh.localExceptions.UserNotFoundException;
 import practice.wfh.model.UserModel;
 import practice.wfh.repository.UsersRepository;
 
-import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -17,7 +17,8 @@ public class UsersService {
 
     private final UsersRepository usersRepository;
 
-    /**As  of Spring 4.3, classes with a single constructor can omit the @Autowired annotation. A nice little bit of
+    /**
+     * As  of Spring 4.3, classes with a single constructor can omit the @Autowired annotation. A nice little bit of
      * convenience and boilerplate removal!
      * ALSO SEE http://olivergierke.de/2013/11/why-field-injection-is-evil/
      */
@@ -26,26 +27,63 @@ public class UsersService {
         this.usersRepository = usersRepository;
     }
 
-    //TODO MAKE THIS RETURN A MODEL ARRAY
-    public List<UsersEntity> getAllUsers() {
-        List<UsersEntity> users = new ArrayList<>();
+    public List<UserModel> getAllUsers() {
 
-        usersRepository.findAll().forEach((users::add));
+        List<UserModel> usersModel = new ArrayList<>();
+        List<UsersEntity> users = new ArrayList<>(usersRepository.findAll());
 
-        return users;
+        users.forEach(userEntity -> usersModel.add(
+                (new UserModel(userEntity.getId(), userEntity.getFirstName(), userEntity.getLastName())))
+        );
+
+        return usersModel;
     }
 
-    public UserModel getUserById(String userId) throws UserNotFoundException
-    {
+    public UserModel createUser(UserModel userModel) throws Exception {
+
+        try {
+            UsersEntity userEntity = usersRepository.save(
+                    new UsersEntity(
+                            userModel.getFirstName(),
+                            userModel.getLastName()
+                    )
+            );
+
+            return new UserModel(userEntity.getId(), userEntity.getFirstName(), userEntity.getLastName());
+        } catch (Exception e) {
+            throw new Exception();
+        }
+
+    }
+
+    //TODO separate entity get functions from getUserByID ---> Def do this one
+    //TODO separate entity to model functions ?
+    //TODO in general, consider breaking the Optional stuff logic as to avoid clutter
+    //TODO consider status.orElseThrow
+    public UserModel getUserById(String userId) throws UserNotFoundException {
         Optional<UsersEntity> optionalUsersEntity = usersRepository.findById(userId);
 
-        if(optionalUsersEntity.isPresent()) {
+        if (optionalUsersEntity.isPresent()) {
             UsersEntity userEntity = optionalUsersEntity.get();
 
-            return new UserModel(userEntity.getId(),userEntity.getFirstName(),userEntity.getLastName());
+            return new UserModel(userEntity.getId(), userEntity.getFirstName(), userEntity.getLastName());
         } else {
             throw new UserNotFoundException();
         }
+    }
+
+    //TODO find the right way to insert exceptions ?
+    public HttpStatus deleteUserEntity(String userId) throws Exception {
+        Optional<UsersEntity> optionalUsersEntity = usersRepository.findById(userId);
+
+        try {
+            usersRepository.deleteById(userId);
+            return HttpStatus.NO_CONTENT;
+        } catch (Exception e) {
+            return HttpStatus.EXPECTATION_FAILED;
+        }
+
+
     }
 
 }

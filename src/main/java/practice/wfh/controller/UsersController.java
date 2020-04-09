@@ -1,17 +1,14 @@
 package practice.wfh.controller;
 
-import org.hibernate.action.internal.EntityActionVetoException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import practice.wfh.entity.UsersEntity;
 import practice.wfh.localExceptions.UserNotFoundException;
 import practice.wfh.model.UserModel;
 import practice.wfh.service.UsersService;
 
-import javax.persistence.EntityNotFoundException;
+import javax.validation.Valid;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/users")
@@ -23,11 +20,9 @@ public class UsersController {
         this.usersService = usersService;
     }
 
-
-    //TODO MAKE THIS RETURN A MODEL ARRAY
     @GetMapping
-    public ResponseEntity<List<UsersEntity>> getAllUsers() {
-        List<UsersEntity> users = usersService.getAllUsers();
+    public ResponseEntity<List<UserModel>> getAllUsers() {
+        List<UserModel> users = usersService.getAllUsers();
 
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
@@ -36,8 +31,17 @@ public class UsersController {
     public ResponseEntity<UserModel> getUser(@PathVariable String userId) throws UserNotFoundException {
         UserModel userModel = usersService.getUserById(userId);
 
-        return new ResponseEntity<UserModel>(userModel, HttpStatus.OK);
+        return new ResponseEntity<>(userModel, HttpStatus.OK);
 
+    }
+
+    @ExceptionHandler({UserNotFoundException.class})
+    @PostMapping("/createUser")
+    public ResponseEntity<UserModel> createUser(@RequestBody @Valid UserModel user) throws Exception {
+        System.out.println("111222");
+        UserModel userModel = usersService.createUser(user);
+
+        return new ResponseEntity<>(userModel, HttpStatus.OK);
     }
 
 
@@ -57,25 +61,11 @@ public class UsersController {
 //    }
 
 
-//
-//    @PostMapping("/createUser")
-//    public ResponseEntity<UsersEntity> createUser(@RequestBody UsersEntity user) {
-//        try {
-//            UsersEntity _user = usersRepository.save(new UsersEntity(user.getFirstName(), user.getLastName()));
-//            return new ResponseEntity<>(_user, HttpStatus.CREATED);
-//        } catch (Exception e) {
-//            return new ResponseEntity<>(null, HttpStatus.EXPECTATION_FAILED);
-//        }
-//    }
-//
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<HttpStatus> deleteUser(@PathVariable("id") String id) {
-//        try {
-//            usersRepository.deleteById(id);
-//            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-//        } catch (Exception e) {
-//            return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
-//        }
-//    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<HttpStatus> deleteUser(@PathVariable("id") String id) throws Exception {
+
+        return new ResponseEntity<>(usersService.deleteUserEntity(id));
+
+    }
 
 }
