@@ -3,6 +3,7 @@ package practice.wfh.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import practice.wfh.localExceptions.UserNotFoundException;
 import practice.wfh.model.UserModel;
 import practice.wfh.service.UsersService;
@@ -12,13 +13,15 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/users")
-public class UsersController {
+public class UserController {
 
     private final UsersService usersService;
 
-    public UsersController(UsersService usersService) {
+    public UserController(UsersService usersService) {
         this.usersService = usersService;
     }
+
+    //TODO THROW ResponseStatusException IN SERVICES ?
 
     @GetMapping
     public ResponseEntity<List<UserModel>> getAllUsers() {
@@ -28,14 +31,14 @@ public class UsersController {
     }
 
     @GetMapping(path = "/{userId}")
-    public ResponseEntity<UserModel> getUser(@PathVariable String userId) throws UserNotFoundException {
-        UserModel userModel = usersService.getUserById(userId);
+    public ResponseEntity<UserModel> getUser(@PathVariable String userId) throws ResponseStatusException {
+        UserModel userModel = usersService.getUserModel(userId);
 
         return new ResponseEntity<>(userModel, HttpStatus.OK);
 
     }
 
-    @ExceptionHandler({UserNotFoundException.class})
+    @ExceptionHandler({ResponseStatusException.class})
     @PostMapping("/createUser")
     public ResponseEntity<UserModel> createUser(@RequestBody @Valid UserModel user) throws Exception {
 

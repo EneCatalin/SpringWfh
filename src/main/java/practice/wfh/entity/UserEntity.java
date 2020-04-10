@@ -8,7 +8,7 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "users")
-public class UsersEntity implements Serializable {
+public class UserEntity implements Serializable {
 
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
@@ -23,14 +23,14 @@ public class UsersEntity implements Serializable {
     @Column(name="lastName")
     private String lastName;
 
-    public UsersEntity() {
+    public UserEntity() {
     }
 
-    public UsersEntity(String id) {
+    public UserEntity(String id) {
         this.id = id;
     }
 
-    public UsersEntity(@NotNull String firstName, @NotNull String lastName) {
+    public UserEntity(@NotNull String firstName, @NotNull String lastName) {
         this.firstName = firstName;
         this.lastName = lastName;
     }
