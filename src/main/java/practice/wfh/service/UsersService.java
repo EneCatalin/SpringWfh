@@ -27,6 +27,16 @@ public class UsersService {
         this.usersRepository = usersRepository;
     }
 
+    private UsersEntity getUserEntityById(String userId) throws UserNotFoundException {
+        Optional<UsersEntity> userEntity = usersRepository.findById(userId);
+
+        if (userEntity.isPresent()) {
+            return userEntity.get();
+        } else {
+            throw new UserNotFoundException();
+        }
+    }
+
     public List<UserModel> getAllUsers() {
 
         List<UserModel> usersModel = new ArrayList<>();
@@ -39,39 +49,34 @@ public class UsersService {
         return usersModel;
     }
 
-    public UserModel createUser(UserModel userModel) throws Exception {
+        public UserModel createUser(UserModel userModel) throws Exception {
 
-        try {
-            UsersEntity userEntity = usersRepository.save(
-                    new UsersEntity(
-                            userModel.getFirstName(),
-                            userModel.getLastName()
-                    )
-            );
+            try {
+                UsersEntity userEntity = usersRepository.save(
+                        new UsersEntity(
+                                userModel.getFirstName(),
+                                userModel.getLastName()
+                        )
+                );
 
-            return new UserModel(userEntity.getId(), userEntity.getFirstName(), userEntity.getLastName());
-        } catch (Exception e) {
-            throw new Exception();
-        }
+                return new UserModel(userEntity.getId(), userEntity.getFirstName(), userEntity.getLastName());
+            } catch (Exception e) {
+                throw new Exception();
+            }
 
     }
 
-    //TODO separate entity get functions from getUserByID ---> Def do this one
-    //TODO separate entity to model functions ?
-    //TODO in general, consider breaking the Optional stuff logic as to avoid clutter
-    //TODO consider status.orElseThrow
+    //TODO Break away the getUserEntity part (with the throw error included ofc)
     public UserModel getUserById(String userId) throws UserNotFoundException {
-        Optional<UsersEntity> optionalUsersEntity = usersRepository.findById(userId);
 
-        if (optionalUsersEntity.isPresent()) {
-            UsersEntity userEntity = optionalUsersEntity.get();
+            UsersEntity userEntity = this.getUserEntityById(userId);
 
             return new UserModel(userEntity.getId(), userEntity.getFirstName(), userEntity.getLastName());
-        } else {
-            throw new UserNotFoundException();
-        }
+
     }
 
+
+    //This method looks all kinds of wrong for some reason
     //TODO find the right way to insert exceptions ?
     public HttpStatus deleteUserEntity(String userId) throws Exception {
         Optional<UsersEntity> optionalUsersEntity = usersRepository.findById(userId);
@@ -95,7 +100,7 @@ public class UsersService {
             userEntity.setLastName(receivedModel.getFirstName());
             usersRepository.save(userEntity);
 
-            return new UserModel(userEntity.getId(),userEntity.getFirstName(),userEntity.getLastName());
+            return new UserModel(userEntity.getId(), userEntity.getFirstName(), userEntity.getLastName());
         } else {
             throw new UserNotFoundException();
         }
