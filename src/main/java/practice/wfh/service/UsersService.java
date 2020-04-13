@@ -9,9 +9,9 @@ import practice.wfh.localExceptions.UserNotFoundException;
 import practice.wfh.model.UserModel;
 import practice.wfh.repository.UserRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UsersService {
@@ -31,82 +31,59 @@ public class UsersService {
     private UserEntity getUserEntity(String userId) throws ResponseStatusException {
         Optional<UserEntity> userEntity = userRepository.findById(userId);
 
-        if (userEntity.isPresent()) {
-            return userEntity.get();
-        } else {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Foo Not Found");
-        }
+        return userEntity.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User Not Found"));
     }
 
     public List<UserModel> getAllUsers() {
 
-        List<UserModel> usersModel = new ArrayList<>();
-        List<UserEntity> users = new ArrayList<>(userRepository.findAll());
-
-        users.forEach(userEntity -> usersModel.add(
-                (new UserModel(userEntity.getId(), userEntity.getFirstName(), userEntity.getLastName())))
-        );
-
-        return usersModel;
+        return userRepository.findAll().stream().map(this::toModel).collect(Collectors.toList());
     }
 
-    public UserModel createUser(UserModel userModel) throws Exception {
+    private UserModel toModel(UserEntity userEntity) {
+        return new UserModel(userEntity.getId(), userEntity.getFirstName(), userEntity.getLastName());
+    }
 
-        try {
-            UserEntity userEntity = userRepository.save(
-                    new UserEntity(
-                            userModel.getFirstName(),
-                            userModel.getLastName()
-                    )
-            );
+    public UserModel createUser(UserModel userModel) {
+        return toModel(userRepository.save(fromModel(userModel)));
+    }
 
-            return new UserModel(userEntity.getId(), userEntity.getFirstName(), userEntity.getLastName());
-        } catch (Exception e) {
-            throw new Exception();
-        }
-
+    private UserEntity fromModel(UserModel model) {
+        return new UserEntity(model.getFirstName(), model.getLastName());
     }
 
     //TODO Break away the getUserEntity part (with the throw error included ofc)
-    public UserModel getUserModel(String userId) throws ResponseStatusException {
-
-        UserEntity userEntity = this.getUserEntity(userId);
-
-        return new UserModel(userEntity.getId(), userEntity.getFirstName(), userEntity.getLastName());
-
+    public UserModel getUserModel(String userId) {
+        return toModel(this.getUserEntity(userId));
     }
 
-
-    //This method looks all kinds of wrong for some reason
-    //TODO find the right way to insert exceptions ?
-    public HttpStatus deleteUserEntity(String userId) throws Exception {
+    public HttpStatus deleteUserEntity(String userId) {
         Optional<UserEntity> optionalUsersEntity = userRepository.findById(userId);
 
-        try {
-            userRepository.deleteById(userId);
-            return HttpStatus.NO_CONTENT;
-        } catch (Exception e) {
-            throw new ResponseStatusException(
-                    HttpStatus.EXPECTATION_FAILED, "No user with that id to delete");
+        if (optionalUsersEntity.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED, "No user with that id to delete");
         }
+        userRepository.deleteById(userId);
+        return HttpStatus.NO_CONTENT; // Is this really the status you want?
 
     }
 
-    //TODO Look over this method
     public UserModel updateUserModel(UserModel receivedModel, String userId) throws UserNotFoundException {
         Optional<UserEntity> userData = userRepository.findById(userId);
 
         if (userData.isPresent()) {
             UserEntity userEntity = userData.get();
-            userEntity.setFirstName(receivedModel.getLastName());
-            userEntity.setLastName(receivedModel.getFirstName());
-            userRepository.save(userEntity);
+            updateEntity(receivedModel, userEntity);
 
-            return new UserModel(userEntity.getId(), userEntity.getFirstName(), userEntity.getLastName());
+            return toModel(userEntity);
         } else {
             throw new UserNotFoundException();
         }
+    }
+
+    private void updateEntity(UserModel receivedModel, UserEntity userEntity) {
+        userEntity.setFirstName(receivedModel.getLastName());
+        userEntity.setLastName(receivedModel.getFirstName());
+        userRepository.save(userEntity);
     }
 
 }
